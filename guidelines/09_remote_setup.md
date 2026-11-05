@@ -20,9 +20,9 @@ The laptop holds nothing important; everything is on the machine and in a privat
    ```bash
    git checkout -b main          # the repository is on 'master' with no commits yet
    git add -A && git commit -m "Green Patch 2026: state on 2026-11-05"
-   # the GitHub CLI (gh) is not installed here: create an EMPTY private repository "greenpatch2026" on github.com
+   # the GitHub CLI (gh) is not installed here: (done 2026-11-05: private repository yairsuari/greenpatch, first commit pushed)
    # (no README), then:
-   git remote add origin https://github.com/<you>/greenpatch2026.git
+   git remote add origin https://github.com/yairsuari/greenpatch.git
    git push -u origin main       # a browser window asks you to sign in to GitHub the first time
    ```
 2. **Data does not travel.** Raw satellite and model files are re-downloaded on the machine from Copernicus Marine
@@ -56,7 +56,7 @@ The laptop holds nothing important; everything is on the machine and in a privat
 
 ## Step 4 — set up the project on the machine (Claude can do this once connected)
 ```bash
-git clone git@github.com:<you>/greenpatch2026.git && cd greenpatch2026
+git clone https://github.com/yairsuari/greenpatch.git greenpatch2026 && cd greenpatch2026
 python3 -m venv --system-site-packages .venv          # CLAUDE.md rule
 .venv/bin/python -c "import xarray, cartopy"           # check what exists before installing
 .venv/bin/pip install -r env/requirements.txt          # only what is missing

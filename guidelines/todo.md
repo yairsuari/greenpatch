@@ -16,7 +16,7 @@ Reorganised 2026-11-05 by phase, around the stronger machine expected in a few d
 - [x] Pilot 300 m reflectance bands re-downloaded (2026-11-05, 11 files in `data/raw/satellite/rrs/olci300/pilot/`, kept); the existing CDOM rasters were not recomputed and are unchanged. The 2026 band file now reaches the archive end (27 Oct), the CDOM raster still ends 13 Oct.
 - [ ] Manuscript 2.3 still says the bands were deleted after the CDOM proxies were computed: fix (tracked) in the writing phase.
 - [ ] Dormant ACOLITE / Level-1 code (`slim.py` ACOLITE_RE, `02_slim_storage.py` L1 handling, `config.L1_EXTENT`): remove, or keep? CLAUDE.md's deletion exception still names Sentinel-2/Landsat (user's file; not edited).
-- [ ] Make the project portable (user 2026-11-05: work moves to a second laptop → VS Code Remote-SSH → machine): guide `09_remote_setup.md`. Initial commit + private GitHub repository — **user to confirm**.
+- [x] Project portable (2026-11-05): guide `09_remote_setup.md`; branch `main`, first commit pushed to the private repository https://github.com/yairsuari/greenpatch. From now on the machine's clone + GitHub are the working copy.
 - [ ] Machine details: settle after the first login (user 2026-11-05: "leave as is").
 - [ ] Verify the QAA v6 constants in `src/greenpatch/cdom.py` against the QAA v6 document.
 - [ ] Verify the coastal Gaza–Israel border coordinate (~31.594°N) used to place the pilot box.
@@ -41,7 +41,7 @@ Reorganised 2026-11-05 by phase, around the stronger machine expected in a few d
 - [ ] **Ask OGS:** (i) was the setup described in the May 2025 QUIDs in operation in Aug–Oct 2026; (ii) are the weekly pre-assimilation misfits for 2026 archived (https://medeaf.inogs.it/nrt-validation); (iii) confirm that the Monday jump is the assimilation (QUID 006_014: the Tuesday run publishes analysis days −8 to −2, so the window starts on Monday); (iv) the analysis–reanalysis offset at the coast (salinity +0.2 psu); (v) how to cite their reply on the missing forecast archive.
 - [ ] **Contact IOLR (monitoring data, SELIPS archive) and the Water Authority (desal intake records)** for in-situ chl, salinity and nutrients Aug–Oct 2026 — moved up from "Later" (2026-11-05): main weakness of Q1 and core of the next study.
 - [ ] Sources for the event facts (salinity drop, alongshore extent, the name "green patch").
-- [ ] Decide how to present Q2 Level A (formal test has no power on model fields; descriptive record cells / ranks proposed).
+- [x] Q2 Level A: descriptive only (user 2026-11-05). To do: adapt `08_q2_operational_model.py` outputs/figures and manuscript 2.7 (tracked) — drop the formal-test wording, keep ranks, record cells, ratios vs both satellite products.
 - [ ] Cloud-credit proposals: decide their purpose (perhaps Q3 only, if the machine comes through).
 - [ ] (Optional) start archiving the daily operational forecast for our domain for future events?
 - [ ] Review the next-study draft `08_next_study_draft.md` (scope and open questions).
