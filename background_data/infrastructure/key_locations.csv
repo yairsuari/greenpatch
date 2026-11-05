@@ -1,0 +1,19 @@
+name,type,lat,lon,precision,note
+Ashkelon desalination plant,desalination,31.645,34.533,approximate (~1-2 km); verify,
+Ashdod desalination plant,desalination,31.790,34.630,approximate (~1-2 km); verify,
+Sorek and Palmachim desalination plants,desalination,31.940,34.700,approximate (~1-2 km); verify,Two plants a few km apart; shown as one point
+Hadera desalination plant,desalination,32.468,34.883,approximate (~1-2 km); verify,
+Damietta Nile mouth,nile,31.525,31.845,approximate; verify,Proposed origin of the alongshore coordinate (s = 0)
+Rosetta Nile mouth,nile,31.460,30.370,approximate; verify,West of the provisional domain
+Lake Burullus outlet,nile,31.590,31.070,approximate; verify,
+Lake Manzala outlets (El-Gamil),nile,31.270,32.180,approximate; verify,
+Wadi Gaza mouth,gaza,31.457,34.374,approximate; verify,
+Lachish stream mouth,stream,31.830,34.640,approximate; verify,
+Yarkon stream mouth,stream,32.100,34.780,approximate; verify,
+Alexander stream mouth,stream,32.390,34.860,approximate; verify,
+Kishon stream mouth,stream,32.810,35.030,approximate; verify,
+Port Said,city,31.260,32.300,approximate,
+Gaza,city,31.520,34.450,approximate,
+Tel Aviv,city,32.080,34.780,approximate,
+Haifa,city,32.810,34.990,approximate,
+Beirut,city,33.890,35.500,approximate,

@@ -1,0 +1,11 @@
+weekday,mean_change,mean_abs_change,n,table,group,segments,d0,d1,d2,d3,d4,d5,d6
+Monday,0.10702142,0.1094222,48.0,weekday,,,,,,,,,
+Tuesday,0.04577596,0.05096979,48.0,weekday,,,,,,,,,
+Wednesday,-0.041737452,0.041737452,50.0,weekday,,,,,,,,,
+Thursday,-0.036525853,0.03836009,50.0,weekday,,,,,,,,,
+Friday,-0.029115854,0.031043293,49.0,weekday,,,,,,,,,
+Saturday,-0.025997981,0.027234113,48.0,weekday,,,,,,,,,
+Sunday,-0.020686686,0.021823207,48.0,weekday,,,,,,,,,
+,,,,decay_after_jump_log10,2026 Sep–Oct,7.0,0.0,0.044,-0.004,-0.04,-0.074,-0.108,-0.13
+,,,,decay_after_jump_log10,2026 Jul–Aug,9.0,0.0,0.083,0.022,-0.039,-0.092,-0.137,-0.168
+,,,,decay_after_jump_log10,2024–2025 Sep–Oct,16.0,0.0,0.031,-0.001,-0.028,-0.048,-0.063,-0.078

@@ -1,0 +1,22 @@
+# Data and model runs (large, reproducible from scripts)
+data/**
+!data/**/
+!data/**/.gitkeep
+model/runs/**
+!model/runs/.gitkeep
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Credentials
+.env
+*.netrc
+.copernicusmarine/
+
+# OS / editors
+Thumbs.db
+.DS_Store
+.vscode/

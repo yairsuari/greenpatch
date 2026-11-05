@@ -1,0 +1,17 @@
+# Core stack for stage 1 (install only what is not already importable)
+numpy
+pandas
+xarray
+netCDF4
+dask
+matplotlib
+cartopy
+scipy
+statsmodels
+scikit-image
+geopandas
+shapely
+copernicusmarine
+earthaccess
+ruptures
+imageio-ffmpeg   # ffmpeg binary for the mp4 movie (07_figures_stage1.py); already in system Python
