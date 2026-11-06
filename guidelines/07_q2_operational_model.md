@@ -37,6 +37,36 @@ Sources: QUIDs of `MEDSEA_ANALYSISFORECAST_BGC_006_014` (issue 3.3), `MEDSEA_MUL
 
 These are the most negative coastal biases in the Mediterranean. The QUID suggests that the model underestimates the local fertilising effect of the Nile. Sub-basins (QUID 006_014, Figure 3, p. 24, checked 2026-10-30): the lev3/lev4 boundary lies at about 33.3°E (read from the map). The Israeli coast, Gaza and northern Sinai east of ~33.3°E (including the pilot box) are in **lev4**; the Nile delta coast from Rosetta to about El-Arish is in **lev3**. Our full domain therefore spans both.
 
+### 2b. The Nile in the operational system (QUIDs read 2026-11-06)
+What the documents say, quoted or paraphrased closely, with sources:
+
+| Aspect | Physics (006_013, NEMO v4.2; QUID issue 2.6, p. 16 and 18, change log) | Biogeochemistry (006_014, OGSTM-BFM; QUID issue 3.3, setup item 9, p. 23–24, Table 9) |
+|---|---|---|
+| Freshwater discharge | "monthly mean dataset for the Nile River (Said et al., 2011)": a **monthly climatology**, identical every year. The other 38 rivers use daily EFAS v5.0 | "Only for Nile, freshwater discharges are provided by climatological data. River locations and their freshwater input are aligned with the Med-physics setup": the same climatology as the physics |
+| How it enters | As runoff in the water balance (E − P − R) at the river mouth | Tracer load = daily freshwater discharge × a **fixed reference concentration** per tracer (mass m⁻³) |
+| Tracers carried | Fresh water (salinity and volume) | N, P, Si, alkalinity and DIC. Nothing in the text about organic matter or CDOM |
+| Concentrations | — | One reference concentration set for each of **4 Mediterranean land macro-regions**, from a literature review (Di Biagio et al. 2025). The Nile values are **not given in the QUID** [VERIFY: ask OGS] |
+| Mouths | Not stated in the text | River no. 1 in Table 9 and **one red dot** on the Figure 3 map, i.e. apparently **one input point** for the Nile, not separate Rosetta and Damietta mouths [VERIFY: grid cell(s) with OGS] |
+| Since when | Change log: "Use of EFAS v5.0 daily discharge data for 38 rivers and Nile river discharge from monthly climatology", entry dated **25 Nov 2025**, so this setup was in force during Aug–Oct 2026, unless a later change exists [VERIFY with OGS] | Same, through the physics alignment |
+
+Reference: Said, M. A., Gerges, M. A., Maiyza, I. A., Hussein, M. A., Radwan, A. A. (2011). Changes in Atlantic Water
+characteristics in the south-eastern Mediterranean Sea as a result of natural and anthropogenic activities.
+*Oceanologia* 53(1), 81–95. (Cited in the physics QUID; we have not read the paper itself, and the monthly values
+used by the model are not reproduced in either QUID [VERIFY].)
+
+**Consequences for Q2 and Q3:**
+- The system **cannot know** of any 2026 anomaly in Nile releases, drain or lagoon outflows. Its Nile is the same in
+  every year, and the reanalysis baseline 2016–2025 shares it. The only route by which a 2026 Nile anomaly could
+  enter the analysis is the weekly chl assimilation, which corrects phytoplankton only (`03_models.md`, QUID facts),
+  not the nutrients or the salinity.
+- A model freshening in 2026 (Level C) therefore cannot come from a larger Nile. It would have to come from transport
+  or mixing, or from the assimilation of in-situ salinity in the physics.
+- The Nile's nutrient load scales with its climatological discharge × a macro-region concentration. Nutrient-rich
+  outflows from agricultural drains and the Manzala/Burullus lagoons (`02_data_sources.md`), Gaza and the Israeli
+  streams are absent.
+- Q3 S0 and N-runs: use the same Nile climatology and concentrations as the operational system. **Ask OGS** for the
+  monthly Nile discharge, its grid cell(s) and the Nile reference concentrations (N, P, Si, ALK, DIC).
+
 Datasets (catalogue check 2026-10-26):
 - 006_014: `cmems_mod_med_bgc-pft_anfc_4.2km_P1D-m` (chl + functional types), `-nut_` (NO3, PO4, NH4, Si), `-bio_`, `-optics_` (kd490).
 - 006_008: `cmems_mod_med_bgc-plankton_my_4.2km_P1D-m` (chl, phyc), `-nut_my_`.

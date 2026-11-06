@@ -12,7 +12,7 @@ Full procedure and facts from the product documentation: **`07_q2_operational_mo
 | `MEDSEA_ANALYSISFORECAST_PHY_006_013` (NEMO + OceanVar) | Salinity, temperature, currents, mixed layer in 2026 | 2024-08-27 → rolling |
 | `MEDSEA_MULTIYEAR_PHY_006_004` | Physics baseline | reanalysis + interim |
 
-Key facts for the paper: weekly assimilation of satellite chlorophyll (coast included); in the SE Levantine the only land input is a climatological Nile; largest negative coastal chlorophyll bias of the Mediterranean in the southern/eastern Levantine.
+Key facts for the paper: weekly assimilation of satellite chlorophyll (coast included); in the SE Levantine the only land input is a climatological Nile (monthly, Said et al. 2011, same every year, apparently one input point, fixed nutrient concentrations; details in `07` section 2b); largest negative coastal chlorophyll bias of the Mediterranean in the southern/eastern Levantine.
 
 ## Q3 — Own model: what would the model need to reproduce the patch? (DRAFT, not yet reviewed)
 
