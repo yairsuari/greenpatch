@@ -9,10 +9,10 @@ Reorganised 2026-11-05 by phase, around the stronger machine expected in a few d
 - [x] Onset map (2026-11-05): `significance.onset` (first window centre starting ≥ 3 consecutive patch days ⚙ `ONSET_PERSIST`; `onset`, `onset_win_start` in `<var>_significance.nc`), figure `onset_<product>_<var>.png`. Pilot: 27 Aug – 5 Sep, offshore pixels first.
 - [x] Co-location table (2026-11-05): `results/<domain>/tables/colocation_chl_patch.csv` (a_dg443, a_ph443, Rrs412/443, HR turbidity inside vs outside the chl patch). Pilot Sep: a_ph443 ×3.5–5 and significant in 95–99 % of the patch; a_dg443 and turbidity mildly up but not significant; Rrs412/443 not CDOM-like. The pilot signature is phytoplankton, not a CDOM-rich plume.
 - [ ] Implement the user's settings of 2026-11-05 (decisions_log): SST L3S `010_012_b` in `config`/downloader/PREPROC (no log; two-sided test → add a two-sided option to the anomaly step and `significance`); HR `buffer_px` 3; a_dg443 `vmax` 2; season-test MAX_LAG 60; then rerun the pilot 05/06/07 and compare with the previous pilot results.
-- [ ] **User:** review `reports/settings_review_2026-11-05.md` (baked-in settings: HR coastal buffer, a_dg443 upper limit, MAX_LAG 60, HR ACF fit, October 2026 data end) and the pilot figures.
+- [x] **User:** review `reports/settings_review_2026-11-05.md`: answered 2026-11-05 (decisions_log; buffer 3 px, a_dg443 max 2, MAX_LAG 60, no HR ACF fit, data end = whatever exists on the run day).
 - [ ] Agree the remaining ⚙ parameters in `05_stage1_patch_identification.md`.
-- [ ] HR autocorrelation function is noisy (≈ 5 pairs per pixel at most lags; e.g. 0 at lags 8–9, 0.63 at 18): smooth it or fit a parametric form.
-- [ ] ACF stops at 30 days (r ≈ 0.09 there for 300 m chl); the whole-season test is slightly anti-conservative. Consider MAX_LAG = 60 for the season test.
+- [x] HR autocorrelation function is noisy: no parametric fit (user 2026-11-05); handled by MAX_LAG 60 only.
+- [x] ACF stops at 30 days: MAX_LAG = 60 for the season test (user 2026-11-05); implementation is part of the settings item above.
 - [x] Pilot 300 m reflectance bands re-downloaded (2026-11-05, 11 files in `data/raw/satellite/rrs/olci300/pilot/`, kept); the existing CDOM rasters were not recomputed and are unchanged. The 2026 band file now reaches the archive end (27 Oct), the CDOM raster still ends 13 Oct.
 - [ ] Manuscript 2.3 still says the bands were deleted after the CDOM proxies were computed: fix (tracked) in the writing phase.
 - [ ] Dormant ACOLITE / Level-1 code (`slim.py` ACOLITE_RE, `02_slim_storage.py` L1 handling, `config.L1_EXTENT`): remove, or keep? CLAUDE.md's deletion exception still names Sentinel-2/Landsat (user's file; not edited).
@@ -22,6 +22,7 @@ Reorganised 2026-11-05 by phase, around the stronger machine expected in a few d
 - [ ] Verify the coastal Gaza–Israel border coordinate (~31.594°N) used to place the pilot box.
 
 ## Phase 2 — on the machine: full-domain Q1
+- [ ] **First login: choose the data disk** (user 2026-11-08: the home disk is very limited). Use a large project/scratch disk (≥ 300 GB) and check its purge and backup policy. Link `data/` and `model/runs/` to it, and keep the caches (pip, tmp) there too, before any download (`09_remote_setup.md`, step 4).
 - [ ] Prepare the machine: copy the repository, create the venv, Copernicus login (`06_local_pilot.md`, "Running on the external machine").
 - [ ] Download the full domain (dry run 2026-10-26: ~139 GB — chl300 18, rrs300 31, HR 90 — plus SST), inventory and image-usage audit.
 - [ ] 05/06 per tile (`--workers` or batch jobs), product-wide FDR (`06 --significance-only`), figures, paper figure, movie, onset map, indicator co-location.

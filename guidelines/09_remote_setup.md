@@ -62,6 +62,25 @@ python3 -m venv --system-site-packages .venv          # CLAUDE.md rule
 .venv/bin/pip install -r env/requirements.txt          # only what is missing
 .venv/bin/copernicusmarine login                      # your Copernicus Marine account
 ```
+**Data folder (user 2026-11-08: the home disk on the machine is very limited).** Decide on the first login where the
+data go: ask the administrator for a large project/scratch/work disk. Size: raw full domain ~139 GB (dry run
+2026-10-26) + SST + `interim`/`processed` (estimate from the pilot ratio on the day [VERIFY]) + Q3 model runs; ask for
+≥ 300 GB. Check whether that disk is backed up or purged after N days (scratch disks often are), since a purge
+would delete `data/interim`, `data/processed` and the runs. Keep the git clone (code, guidelines, results figures; small) in
+home, and put only the heavy folders on the big disk via symlinks. No code change is needed: all paths go through
+`config.ROOT / "data"`.
+```bash
+BIG=/path/to/big/disk/greenpatch          # ⟳ the path the administrator gives
+mkdir -p $BIG/data $BIG/model_runs $BIG/cache
+ln -s $BIG/data data                      # inside the clone, before any download
+mkdir -p model && ln -s $BIG/model_runs model/runs
+export PIP_CACHE_DIR=$BIG/cache/pip TMPDIR=$BIG/cache/tmp   # add to ~/.bashrc; keeps caches off home
+mkdir -p $TMPDIR && df -h ~ $BIG                           # check free space on both
+```
+If symlinks are not allowed on that file system, add an environment variable `GREENPATCH_DATA` to `config.py`
+(Claude, small change). Also check where the venv lives; with `--system-site-packages` it is small, but move it to
+`$BIG` if home is very tight.
+
 ⟳ On a cluster, load modules first (Python, NetCDF/HDF5, later compilers and MPI for NEMO/OGSTM-BFM).
 Paths in the code are relative to the project root; on Linux use `.venv/bin/python` instead of
 `.venv\Scripts\python`.
