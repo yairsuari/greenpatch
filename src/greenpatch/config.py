@@ -41,9 +41,6 @@ def describe() -> str:
     return (f"domain '{DOMAIN_NAME}': {d['lat0']}-{d['lat1']} N, {d['lon0']}-{d['lon1']} E "
             f"(set GREENPATCH_DOMAIN or --domain to change)")
 
-# Sentinel-2 / Landsat coverage: Israeli and Gaza coast only (decision 2026-10-15)
-L1_EXTENT = dict(lat0=31.2, lat1=33.15, lon0=34.2, lon1=35.15)
-
 # Season (provisional) and years: baseline 2016-2025 + event year 2026
 SEASON = dict(start=(7, 1), end=(10, 31))   # (month, day), inclusive
 YEARS = list(range(2016, 2027))
@@ -51,7 +48,6 @@ EVENT_YEAR = 2026
 
 # Selected products (guidelines/02_data_sources.md) and where their raw files live.
 #   kind "netcdf":  CMEMS NetCDF files; dates read from the time coordinate
-#   kind "l1":      Level-1 scenes (SAFE folders / zips / Landsat folders or tars); dates from file names
 #   daily:          True if the product nominally has one value per day (missing days are then real gaps)
 PRODUCTS = {
     "olci300": dict(
@@ -75,15 +71,6 @@ PRODUCTS = {
         folder=DATA_INTERIM / "cdom300",
         variables=["adg443"],
         daily=True,
-    ),
-    # Not used for the statistics (decision 2026-10-20: statistics on the two CMEMS products only).
-    # Kept so the inventory still recognises any Level-1 scenes; role (if any) pending.
-    "s2_landsat": dict(
-        label="Sentinel-2 / Landsat 8-9 Level-1 (not used for statistics)",
-        kind="l1",
-        folder=sat_folder("l1"),
-        variables=[],
-        daily=False,
     ),
 }
 
@@ -158,8 +145,6 @@ MODEL_DOWNLOADS = ["bgc_my", "bgc_an", "phy_my", "phy_an", "bgc_an_all", "phy_an
 CDOM_OUT = PRODUCTS["cdom300"]["folder"]
 DELETION_LOG = DATA_INTERIM / "deletion_log.csv"
 
-# ACOLITE Level-2 water outputs (step 2) are written here
-ACOLITE_OUT = DATA_INTERIM / "acolite"
 SLIM_OUT = DATA_INTERIM / "slim"
 
 # Storage reduction (scripts/02_slim_storage.py). Proposed settings, see decisions_log.md.
@@ -174,9 +159,6 @@ SLIM = {
     "hr":      dict(folder=PRODUCTS["hr"]["folder"], kind="netcdf",
                     keep=r"^(CHL|chl|TUR|tur|SPM|spm|.*[Ff]lag.*|QI.*)$",
                     bbox=DOMAIN, coast_km=None, sig_digits=4),
-    "acolite": dict(folder=ACOLITE_OUT, kind="acolite",
-                    keep=r"^(chl_.*|t_nechad.*|spm_nechad.*|Rrs_(4[4-9]\d|5[5-6]\d|6[5-6]\d|70\d|86\d)|l2_flags)$",
-                    bbox=L1_EXTENT, coast_km=35, sig_digits=4),
 }
 
 # ---------------------------------------------------------------- Stage 1 preprocessing (05, Part 1; confirmed 2026-10-21)

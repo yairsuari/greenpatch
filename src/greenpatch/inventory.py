@@ -1,9 +1,9 @@
 """Step 1 of guidelines/05_stage1_patch_identification.md: inventory and integrity.
 
 For each product folder:
-  * list every file / scene, with size, modification time and SHA-256 checksum;
-  * read acquisition date, time, sensor and tile (from the NetCDF time axis or the file name);
-  * check integrity (opens, expected variable, overlaps the domain, archive CRC, scene completeness);
+  * list every file, with size, modification time and SHA-256 checksum;
+  * read acquisition dates and sensor (from the NetCDF time axis, or the date in the file name);
+  * check integrity (opens, expected variable, overlaps the domain);
   * optionally compute the fraction of valid (non-NaN) pixels in the domain per date;
   * build an availability table (one row per product x date x sensor x tile)
     and list the missing dates per season.
@@ -13,8 +13,6 @@ from __future__ import annotations
 import datetime as dt
 import hashlib
 import re
-import tarfile
-import zipfile
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 
@@ -22,8 +20,6 @@ import numpy as np
 import pandas as pd
 
 # ------------------------------------------------------------------ file-name patterns
-S2_RE = re.compile(r"^(S2[ABCD])_MSI(L1C|L2A)_(\d{8})T(\d{6})_N\d{4}_R\d{3}_(T\d{2}[A-Z]{3})_")
-LS_RE = re.compile(r"^(LC0[89])_(L1TP|L1GT|L1GS|L2SP)_(\d{6})_(\d{8})_(\d{8})_\d{2}_(T1|T2|RT)")
 DATE_RE = re.compile(r"(?<!\d)(20\d{2})(\d{2})(\d{2})(?!\d)")
 
 NC_SUFFIXES = {".nc", ".nc4", ".netcdf"}
@@ -34,7 +30,7 @@ SKIP_NAMES = {".gitkeep", "desktop.ini", "Thumbs.db"}
 class FileRecord:
     product: str
     path: str
-    kind: str                      # netcdf | safe_dir | safe_zip | landsat_dir | landsat_tar | other
+    kind: str                      # netcdf | other
     size_bytes: int
     modified_utc: str
     sha256: str = ""
@@ -60,12 +56,9 @@ def _mtime(path: Path) -> str:
 
 
 def sha256(path: Path, chunk: int = 1 << 20) -> str:
-    """SHA-256 of a file. For a scene folder: hash of its manifest/metadata file (fast, identifies the scene)."""
+    """SHA-256 of a file ("" for a folder)."""
     if path.is_dir():
-        meta = next(iter(sorted(path.glob("manifest.safe")) + sorted(path.glob("*_MTL.txt"))), None)
-        if meta is None:
-            return ""
-        path = meta
+        return ""
     h = hashlib.sha256()
     with open(path, "rb") as f:
         while block := f.read(chunk):
@@ -73,23 +66,15 @@ def sha256(path: Path, chunk: int = 1 << 20) -> str:
     return h.hexdigest()
 
 
-def _iso(d8: str) -> str:
-    return f"{d8[:4]}-{d8[4:6]}-{d8[6:]}"
-
-
-def _hms(t6: str) -> str:
-    return f"{t6[:2]}:{t6[2:4]}:{t6[4:]}"
-
-
 def discover(folder: Path) -> list[Path]:
-    """Top-level items to inventory. SAFE and Landsat folders count as one item; other folders are searched."""
+    """Files to inventory; sub-folders are searched."""
     items = []
     if not folder.exists():
         return items
     for p in sorted(folder.iterdir()):
         if p.name in SKIP_NAMES or p.name.startswith("."):
             continue
-        if p.is_dir() and not (p.suffix == ".SAFE" or LS_RE.match(p.name)):
+        if p.is_dir():
             items.extend(discover(p))
         else:
             items.append(p)
@@ -160,60 +145,8 @@ def check_netcdf(rec: FileRecord, path: Path, variables: list[str], domain: dict
         rec.message = "; ".join(n for n in notes if n)
 
 
-def check_l1(rec: FileRecord, path: Path):
-    name = path.name
-    m_s2, m_ls = S2_RE.match(name), LS_RE.match(name)
-    if m_s2:
-        rec.sensor, _, d8, t6, rec.tile = m_s2.groups()
-        rec.dates = [(_iso(d8), _hms(t6), np.nan)]
-    elif m_ls:
-        rec.sensor, _, pathrow, d8, _, _ = m_ls.groups()
-        rec.tile = f"P{pathrow[:3]}R{pathrow[3:]}"
-        rec.dates = [(_iso(d8), "", np.nan)]
-    else:
-        rec.status, rec.message = "warning", "file name not recognised as a Sentinel-2 or Landsat scene"
-        return
-
-    try:
-        if rec.kind == "safe_dir":
-            if not (path / "manifest.safe").exists():
-                rec.status, rec.message = "error", "manifest.safe missing (incomplete download?)"
-            elif len(list(path.rglob("*.jp2"))) < 13:
-                rec.status, rec.message = "error", "fewer than 13 band images (incomplete download?)"
-        elif rec.kind == "safe_zip":
-            with zipfile.ZipFile(path) as z:
-                bad = z.testzip()
-                if bad:
-                    rec.status, rec.message = "error", f"CRC error in {bad}"
-                elif not any(n.endswith("manifest.safe") for n in z.namelist()):
-                    rec.status, rec.message = "error", "manifest.safe missing inside zip"
-        elif rec.kind == "landsat_dir":
-            mtl = list(path.glob("*_MTL.txt"))
-            if not mtl:
-                rec.status, rec.message = "error", "MTL metadata file missing"
-            else:
-                t = re.search(r'SCENE_CENTER_TIME\s*=\s*"?(\d{2}:\d{2}:\d{2})', mtl[0].read_text(errors="ignore"))
-                if t:
-                    rec.dates = [(rec.dates[0][0], t.group(1), np.nan)]
-        elif rec.kind == "landsat_tar":
-            with tarfile.open(path) as tf:
-                names = tf.getnames()
-                if not any(n.endswith("_MTL.txt") for n in names):
-                    rec.status, rec.message = "error", "MTL metadata file missing inside archive"
-    except (zipfile.BadZipFile, tarfile.TarError, OSError) as exc:
-        rec.status, rec.message = "error", f"corrupt archive: {exc}"[:300]
-
-
 def classify(path: Path) -> str:
-    if path.is_dir():
-        return "safe_dir" if path.suffix == ".SAFE" else ("landsat_dir" if LS_RE.match(path.name) else "other")
-    if path.suffix.lower() in NC_SUFFIXES:
-        return "netcdf"
-    if path.suffix.lower() == ".zip" and S2_RE.match(path.name):
-        return "safe_zip"
-    if path.name.endswith((".tar", ".tar.gz", ".tgz")) and LS_RE.match(path.name):
-        return "landsat_tar"
-    return "other"
+    return "netcdf" if path.suffix.lower() in NC_SUFFIXES else "other"
 
 
 # ------------------------------------------------------------------ main entry points
@@ -233,8 +166,6 @@ def inventory_product(name: str, spec: dict, domain: dict, *, checksums: bool = 
             rec.status, rec.message = "error", "empty file"
         elif kind == "netcdf":
             check_netcdf(rec, path, spec["variables"], domain, valid_fraction)
-        elif kind != "other":
-            check_l1(rec, path)
         else:
             rec.status, rec.message = "warning", "unrecognised file type; not inventoried"
         if checksums and rec.size_bytes:

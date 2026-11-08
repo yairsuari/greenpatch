@@ -110,6 +110,12 @@ Strengths: formal statistical answer to "significantly higher than previous year
 ### Method B — Object-based patch detection and tracking
 **Question:** what was the size, shape and life cycle of the patch, and how does it compare with each previous summer's patch?
 
+**Scope confirmed by the user 2026-11-08 (reduced form):**
+- Relative P90 threshold (leave-one-year-out) as the main mask, with P85 and P95 as sensitivity. The absolute 1 mg m⁻³ threshold goes in the supplement only.
+- Steps 1–5 and 7–9 apply. Per-year metrics: maximum area, area-days, alongshore extent, offshore reach and duration.
+- **Step 6 (tracking) is dropped.** Onset and end in step 7 are taken from the daily area series, not from a track.
+- Not implemented yet.
+
 1. **Exceedance mask per 10-day composite**: pixel is "patch" if *x* > baseline P90 for its pixel and bin (relative threshold) ⚙. Run the absolute alternative (*chl* > 1 mg/m³ ⚙) in parallel. Composites fill most cloud and swath gaps, so tracking becomes bin-to-bin.
 2. **Coverage flag (no discarding):** composites where < 50 % ⚙ of the 0–10 km coastal strip is valid are *flagged* "low coverage"; they still enter all metrics. Invalid pixels are "unknown", never "not patch". Area metrics on flagged composites are reported as a range: observed area (lower bound) to observed + adjacent unknown area (upper bound). A sensitivity run without flagged composites shows their influence.
 3. **Morphological cleaning:** opening then closing with a small structuring element; remove objects below a minimum area ⚙.
@@ -124,6 +130,14 @@ Strengths: intuitive size and duration; follows the patch as it moves, which bea
 
 ### Method C — Alongshore Hovmöller diagrams and change-point detection
 **Question:** when did the patch arrive at each part of the coast, how fast did it spread, and how does each year compare in one number?
+
+**Scope confirmed by the user 2026-11-08 (reduced form):**
+- Steps 1–3: the Hovmöller diagrams per year.
+- Step 5: arrival at each desalination intake and the spreading speed (Theil-Sen). Both are read from the existing daily onset map (`significance.onset`).
+- Step 6: the integrated index per year.
+- **Step 4 (PELT/Pettitt change points) is dropped**, because the onset map already gives the onset of every pixel. Step 7 is optional.
+- Headline year comparison: B area-days together with the C index.
+- Not implemented yet.
 
 1. **Bins:** alongshore bins of 5 km ⚙ × offshore bands 0–1 km (HR only), 1–5, 5–15 and 15–30 km ⚙.
 2. **Bin series:** for each spatial bin, median *Δx* of valid pixels per 10-day bin (the statistical series) and per day for OLCI300 (the refinement series). Every value is kept, together with the valid fraction of its spatial bin; values from bins < 30 % ⚙ valid are *flagged*, not dropped, and a sensitivity run without them shows their influence.

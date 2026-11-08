@@ -2,9 +2,6 @@
 
 What it does per product (settings in src/greenpatch/config.py -> SLIM):
   olci300, hr   CMEMS NetCDF in data/raw/...  -> keep listed variables, crop to the domain, compress
-  acolite       ACOLITE L2W NetCDF in data/interim/acolite -> keep chl / turbidity / a few Rrs bands,
-                crop to the Israel-Gaza box and the coastal strip, compress.
-                With --delete-originals, the matching Level-1 scene in data/raw/satellite/l1 is deleted too.
 
 Slim copies go to data/interim/<domain>/slim/<product>/ and are verified against the source
 (same variables and time steps, values within 0.1 %) before any deletion.
@@ -14,7 +11,7 @@ Usage (from the project root)
   .venv/Scripts/python scripts/02_slim_storage.py                       # dry run: plan + estimated saving
   .venv/Scripts/python scripts/02_slim_storage.py --apply               # write + verify slim copies
   .venv/Scripts/python scripts/02_slim_storage.py --apply --delete-originals
-  options: --domain pilot|full   --products olci300 hr acolite   --root <other project-like folder, for testing>
+  options: --domain pilot|full   --products olci300 hr   --root <other project-like folder, for testing>
 """
 import argparse
 import sys
@@ -30,8 +27,7 @@ from greenpatch.runtime import add_domain_arg, domain_from_argv  # noqa: E402
 domain_from_argv()  # before config: --domain selects the analysis domain
 from greenpatch import config  # noqa: E402
 from greenpatch.inventory import discover, sha256  # noqa: E402
-from greenpatch.slim import (_size, acolite_key, delete_path, l1_key, log_deletion,  # noqa: E402
-                             matching_l1, slim_dataset, verify)
+from greenpatch.slim import _size, delete_path, log_deletion, slim_dataset, verify  # noqa: E402
 
 
 def remap(p: Path, root: Path) -> Path:
@@ -67,7 +63,7 @@ def main():
     ap.add_argument("--products", nargs="+", default=list(config.SLIM), choices=list(config.SLIM))
     ap.add_argument("--apply", action="store_true", help="write slim copies (default: dry run)")
     ap.add_argument("--delete-originals", action="store_true",
-                    help="after verification, delete source files (and matching Level-1 scenes for acolite)")
+                    help="after verification, delete source files")
     ap.add_argument("--root", type=Path, default=config.ROOT, help="project-like root (for testing)")
     add_domain_arg(ap)
     a = ap.parse_args()
@@ -79,7 +75,6 @@ def main():
     interim = remap(config.DATA_INTERIM, a.root)
     log = interim / "deletion_log.csv"
     sums = known_checksums(interim)
-    l1_items = [(p, l1_key(p.name)) for p in discover(remap(config.PRODUCTS["s2_landsat"]["folder"], a.root))]
 
     rows, problems = [], []
     for name in a.products:
@@ -89,7 +84,7 @@ def main():
         files = [p for p in discover(src_dir) if p.suffix == ".nc" and not p.name.endswith(".tmp.nc")]
         before = sum(_size(p) for p in files)
         stat = dict(product=name, files=len(files), before_GB=before / 1e9, after_GB=0.0,
-                    slimmed=0, skipped=0, failed=0, deleted=0, l1_deleted=0, l1_GB_freed=0.0)
+                    slimmed=0, skipped=0, failed=0, deleted=0)
 
         if not a.apply:
             # dry run: slim one sample into a temporary folder to estimate the ratio
@@ -104,10 +99,6 @@ def main():
                         ratio = float("nan")
                         print(f"[{name}] sample {sample.name}: cannot slim ({exc})")
                 stat["after_GB"] = before * ratio / 1e9
-            if name == "acolite":
-                matched = {p for f in files if (k := acolite_key(f.name)) for p in matching_l1(k, l1_items)}
-                stat["l1_GB_freed"] = sum(_size(p) for p in matched) / 1e9
-                stat["l1_deleted"] = len(matched)
             rows.append(stat)
             continue
 
@@ -145,26 +136,6 @@ def main():
                 stat["after_GB"] += dst.stat().st_size / 1e9
 
             if ok and a.delete_originals:
-                l1 = []
-                if name == "acolite":
-                    k = acolite_key(src.name)
-                    l1 = matching_l1(k, l1_items) if k else []
-                    if k is None:
-                        problems.append(dict(product=name, file=src.name,
-                                             problem="ACOLITE name not recognised; Level-1 scene kept"))
-                    elif not l1:
-                        n_c = sum(1 for _, kk in l1_items if kk and kk[0] == k[0] and kk[1] == k[1])
-                        problems.append(dict(product=name, file=src.name, problem=(
-                            f"no tile in name and {n_c} candidate scenes on that date; Level-1 kept"
-                            if n_c > 1 else "no matching Level-1 scene found (already deleted?)")))
-                for p in l1:
-                    if p.exists():
-                        rel = p.relative_to(raw_root).as_posix()
-                        size = _size(p)
-                        log_deletion(log, p, size, sums.get(rel) or sha256(p), f"ACOLITE output verified: {dst.name}")
-                        delete_path(p)
-                        stat["l1_deleted"] += 1
-                        stat["l1_GB_freed"] += size / 1e9
                 rel = src.relative_to(raw_root).as_posix() if src.is_relative_to(raw_root) else str(src)
                 log_deletion(log, src, _size(src), sums.get(rel) or sha256(src), f"slim copy verified: {dst}")
                 delete_path(src)
@@ -173,11 +144,11 @@ def main():
 
     # ---------------- report
     df = pd.DataFrame(rows)
-    df["saved_GB"] = df["before_GB"] - df["after_GB"] + df["l1_GB_freed"]
+    df["saved_GB"] = df["before_GB"] - df["after_GB"]
     pd.set_option("display.width", 160)
     mode = "DRY RUN (estimate from one sample file per product)" if not a.apply else "APPLIED"
     print(f"\n=== Storage reduction: {mode} ===")
-    cols = ["product", "files", "before_GB", "after_GB", "l1_deleted", "l1_GB_freed", "saved_GB"]
+    cols = ["product", "files", "before_GB", "after_GB", "saved_GB"]
     if a.apply:
         cols[2:2] = ["slimmed", "skipped", "failed", "deleted"]
     print(df[cols].to_string(index=False, float_format=lambda v: f"{v:.3f}"))

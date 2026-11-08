@@ -17,12 +17,6 @@ import numpy as np
 import xarray as xr
 
 from .geo import coastal_mask
-from .inventory import LS_RE, S2_RE, sha256
-
-ACOLITE_RE = [
-    re.compile(r"^(S2[ABCD])_MSI_(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})(?:_(T\d{2}[A-Z]{3}))?_L2W"),
-    re.compile(r"^(L[89])_OLI_(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})(?:_(\d{6}))?_L2W"),
-]
 
 
 # ------------------------------------------------------------------ helpers
@@ -144,33 +138,3 @@ def log_deletion(log: Path, path: Path, size: int, checksum: str, reason: str):
 
 def delete_path(p: Path):
     shutil.rmtree(p) if p.is_dir() else p.unlink()
-
-
-# ------------------------------------------------------------------ ACOLITE <-> Level-1 matching
-def acolite_key(name: str):
-    """(platform, date, tile-or-pathrow or None) from an ACOLITE output name."""
-    for rx in ACOLITE_RE:
-        m = rx.match(name)
-        if m:
-            g = m.groups()
-            return g[0], f"{g[1]}-{g[2]}-{g[3]}", g[7]
-    return None
-
-
-def l1_key(name: str):
-    m = S2_RE.match(name)
-    if m:
-        sat, _, d8, _, tile = m.groups()
-        return sat, f"{d8[:4]}-{d8[4:6]}-{d8[6:]}", tile
-    m = LS_RE.match(name)
-    if m:
-        sat, _, pathrow, d8, _, _ = m.groups()
-        return "L" + sat[-1], f"{d8[:4]}-{d8[4:6]}-{d8[6:]}", pathrow
-    return None
-
-
-def matching_l1(akey, l1_items):
-    """Level-1 scenes matching an ACOLITE output. Without a tile in the ACOLITE name, match only if unique."""
-    plat, date, tile = akey
-    cands = [p for p, k in l1_items if k and k[0] == plat and k[1] == date and (tile is None or k[2] == tile)]
-    return cands if (tile is not None or len(cands) == 1) else []

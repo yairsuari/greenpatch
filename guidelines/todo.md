@@ -8,14 +8,14 @@ Reorganised 2026-11-05 by phase, around the stronger machine expected in a few d
 - [ ] Chl algorithms (web, 2026-11-05, catalogue records, not yet the QUIDs): 300 m OLCI = MedOC4 (Case 1) blended with AD4 (Case 2; Berthon and Zibordi 2004) by a Mahalanobis-distance weight against MedBiOp spectra; HR (Sentinel-2 MSI, 100 m, 20 km coastal strip) = "multi-algorithm approach" (O'Reilly et al.), details in QUID CMEMS-BGP_HR-QUID-009-201to212. Read both QUIDs for coastal validation and upper limits [VERIFY].
 - [x] Onset map (2026-11-05): `significance.onset` (first window centre starting ≥ 3 consecutive patch days ⚙ `ONSET_PERSIST`; `onset`, `onset_win_start` in `<var>_significance.nc`), figure `onset_<product>_<var>.png`. Pilot: 27 Aug – 5 Sep, offshore pixels first.
 - [x] Co-location table (2026-11-05): `results/<domain>/tables/colocation_chl_patch.csv` (a_dg443, a_ph443, Rrs412/443, HR turbidity inside vs outside the chl patch). Pilot Sep: a_ph443 ×3.5–5 and significant in 95–99 % of the patch; a_dg443 and turbidity mildly up but not significant; Rrs412/443 not CDOM-like. The pilot signature is phytoplankton, not a CDOM-rich plume.
-- [ ] Implement the user's settings of 2026-11-05 (decisions_log): SST L3S `010_012_b` in `config`/downloader/PREPROC (no log; two-sided test → add a two-sided option to the anomaly step and `significance`); HR `buffer_px` 3; a_dg443 `vmax` 2; season-test MAX_LAG 60; then rerun the pilot 05/06/07 and compare with the previous pilot results.
+- [ ] **On the new machine, before the full-domain run (user 2026-11-08):** implement the user's settings of 2026-11-05 (decisions_log): SST L3S `010_012_b` in `config`/downloader/PREPROC (no log; two-sided test → add a two-sided option to the anomaly step and `significance`); HR `buffer_px` 3; a_dg443 `vmax` 2; season-test MAX_LAG 60. Check the code on a small test box first (the pilot box, re-downloaded there: minutes), then run the full domain.
 - [x] **User:** review `reports/settings_review_2026-11-05.md`: answered 2026-11-05 (decisions_log; buffer 3 px, a_dg443 max 2, MAX_LAG 60, no HR ACF fit, data end = whatever exists on the run day).
 - [ ] Agree the remaining ⚙ parameters in `05_stage1_patch_identification.md`.
 - [x] HR autocorrelation function is noisy: no parametric fit (user 2026-11-05); handled by MAX_LAG 60 only.
 - [x] ACF stops at 30 days: MAX_LAG = 60 for the season test (user 2026-11-05); implementation is part of the settings item above.
 - [x] Pilot 300 m reflectance bands re-downloaded (2026-11-05, 11 files in `data/raw/satellite/rrs/olci300/pilot/`, kept); the existing CDOM rasters were not recomputed and are unchanged. The 2026 band file now reaches the archive end (27 Oct), the CDOM raster still ends 13 Oct.
 - [ ] Manuscript 2.3 still says the bands were deleted after the CDOM proxies were computed: fix (tracked) in the writing phase.
-- [ ] Dormant ACOLITE / Level-1 code (`slim.py` ACOLITE_RE, `02_slim_storage.py` L1 handling, `config.L1_EXTENT`): remove, or keep? CLAUDE.md's deletion exception still names Sentinel-2/Landsat (user's file; not edited).
+- [x] Dormant ACOLITE / Level-1 code removed (user 2026-11-08; decisions_log).
 - [x] Project portable (2026-11-05): guide `09_remote_setup.md`; branch `main`, first commit pushed to the private repository https://github.com/yairsuari/greenpatch. From now on the machine's clone + GitHub are the working copy.
 - [ ] Machine details: settle after the first login (user 2026-11-05: "leave as is").
 - [ ] Verify the QAA v6 constants in `src/greenpatch/cdom.py` against the QAA v6 document.
@@ -24,12 +24,12 @@ Reorganised 2026-11-05 by phase, around the stronger machine expected in a few d
 ## Phase 2 — on the machine: full-domain Q1
 - [ ] **First login: choose the data disk** (user 2026-11-08: the home disk is very limited). Use a large project/scratch disk (≥ 300 GB) and check its purge and backup policy. Link `data/` and `model/runs/` to it, and keep the caches (pip, tmp) there too, before any download (`09_remote_setup.md`, step 4).
 - [ ] Prepare the machine: copy the repository, create the venv, Copernicus login (`06_local_pilot.md`, "Running on the external machine").
-- [ ] Download the full domain (dry run 2026-10-26: ~139 GB — chl300 18, rrs300 31, HR 90 — plus SST), inventory and image-usage audit.
+- [ ] Download everything on the machine (user 2026-11-08: nothing copied from this laptop): full domain satellite (dry run 2026-10-26: ~139 GB — chl300 18, rrs300 31, HR 90), SST L3S, Q2 model output (`config.MODEL_DOWNLOADS`, ~50 MB); then inventory and image-usage audit.
 - [ ] 05/06 per tile (`--workers` or batch jobs), product-wide FDR (`06 --significance-only`), figures, paper figure, movie, onset map, indicator co-location.
 - [ ] Sensitivity run for the patch rules: effect size ×1.25 / ×2, minimum area 0.5 / 2 km² (supplement).
 - [ ] Q2 re-scoring against the full-domain patch: hit rate, false-alarm ratio, CSI, onset/peak dates, alongshore extent (can run locally; model data are small).
 - [ ] Q2 ⚙: minimum object area on the 4.2 km grid; patch fraction threshold for the satellite-model comparison.
-- [ ] Methods B and C (needs the user's confirmation of Part 2 of `05`).
+- [ ] Methods B and C, reduced form confirmed by the user 2026-11-08 (decisions_log; `05` Part 2). B = per-year object metrics from a relative P90 mask, no tracking. C = Hovmöller per year, intake arrival dates and speed from the onset map, integrated index, no change points. Implement on the processed full-domain data (new script, e.g. `09_methods_bc.py`) and produce one year-comparison table (B area-days + C index). Needs the desalination intake coordinates (`background_data/infrastructure/` [VERIFY they exist]).
 
 ## Phase 3 — Q3 simplified model runs (design now, run on the machine)
 - [x] Q3 simplified design drafted in `03_models.md` (2026-11-05): S0 control, S1 source (2–3 strengths), N1 chl-only nudging, N2 chl + nutrients above threshold, N3 chl + source; 1 Aug – 31 Oct 2026 hindcast.
@@ -44,7 +44,7 @@ Reorganised 2026-11-05 by phase, around the stronger machine expected in a few d
 - [ ] Sources for the event facts (salinity drop, alongshore extent, the name "green patch").
 - [x] Q2 Level A: descriptive only (user 2026-11-05). To do: adapt `08_q2_operational_model.py` outputs/figures and manuscript 2.7 (tracked) — drop the formal-test wording, keep ranks, record cells, ratios vs both satellite products.
 - [ ] Cloud-credit proposals: decide their purpose (perhaps Q3 only, if the machine comes through).
-- [ ] (Optional) start archiving the daily operational forecast for our domain for future events?
+- [x] Archiving the daily operational forecast: not now (user 2026-11-08: blooms expected only in summer). Revisit before ~June 2027 if wanted.
 - [ ] Review the next-study draft `08_next_study_draft.md` (scope and open questions).
 - [ ] Discuss: September 2025 was also high in the pilot box (box-median chl 5–8 mg m⁻³ vs ~1–5 in 2016–2024; 2026: 12–25); 2021 and 2023 also had high September bins. Possible trend; 2025 in the baseline makes it more conservative.
 
